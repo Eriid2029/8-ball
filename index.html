@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Magic 8 Ball — “Will we ever get back together?”</title>
+  <style>
+    :root {
+      --bg: #0d0b11;
+      --pink: #ffb3c7;
+      --ink: #1a0b12;
+      --card: #1b1522;
+      --glow: rgba(255, 179, 199, 0.6);
+    }
+    html, body {
+      height: 100%;
+      margin: 0;
+      background: radial-gradient(circle at 50% 20%, #1f172a, var(--bg) 70%);
+      color: white;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+    .wrap {
+      min-height: 100%;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+    .card {
+      width: min(500px, 92vw);
+      background: linear-gradient(180deg, var(--card), #120c18);
+      border-radius: 24px;
+      box-shadow: 0 10px 40px rgba(0,0,0,.5), 0 0 40px var(--glow);
+      padding: 22px 22px 26px;
+      text-align: center;
+      border: 1px solid rgba(255,255,255,.07);
+    }
+    h1 {
+      font-weight: 700;
+      font-size: clamp(18px, 3.5vw, 22px);
+      margin: 0 0 10px;
+      letter-spacing: .2px;
+      color: #ffe5ec;
+    }
+    .q {
+      opacity: .9;
+      font-size: clamp(15px, 3.4vw, 18px);
+      margin-bottom: 16px;
+    }
+    .ball {
+      width: 250px;
+      height: 250px;
+      max-width: 70vw;
+      max-height: 70vw;
+      margin: 8px auto 16px;
+      background: radial-gradient(circle at 30% 25%, #2a2037 0, #0c0811 60%, #000 100%);
+      border-radius: 50%;
+      position: relative;
+      box-shadow: inset 0 -12px 40px rgba(0,0,0,.6), inset 0 6px 30px rgba(255,255,255,.08);
+      transition: transform .18s ease;
+    }
+    .ball.shake {
+      animation: shake .5s ease both;
+    }
+    @keyframes shake {
+      10%, 90% { transform: translateX(-2px) rotate(-1deg); }
+      20%, 80% { transform: translateX(3px) rotate(1deg); }
+      30%, 50%, 70% { transform: translateX(-4px) rotate(-2deg); }
+      40%, 60% { transform: translateX(4px) rotate(2deg); }
+    }
+    .window {
+      position: absolute;
+      inset: 50% auto auto 50%;
+      transform: translate(-50%, -50%);
+      width: 65%;
+      height: 65%;
+      background: radial-gradient(circle at 50% 35%, #0f0a16 0, #0a0710 60%, #020104 100%);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(255,255,255,.06);
+      overflow: hidden;
+    }
+    .triangle {
+      width: 0; height: 0;
+      border-left: 80px solid transparent;
+      border-right: 80px solid transparent;
+      border-top: 130px solid #1830a8;
+      filter: drop-shadow(0 0 12px rgba(59, 130, 246, .45));
+      transform: translateY(8px);
+    }
+    .answer {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 60%;
+      transform: translate(-50%, -25%);
+      text-align: center;
+      font-weight: 700;
+      line-height: 1.15;
+      font-size: clamp(12px, 3.2vw, 16px);
+      color: #dfe8ff;
+      text-shadow: 0 0 8px rgba(59,130,246,.55);
+    }
+    .btn {
+      display: inline-block;
+      border: none;
+      padding: 12px 18px;
+      font-size: 16px;
+      font-weight: 700;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #ff8fb3, #ffc0d2);
+      color: #2b0e1b;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(255, 143, 179, .35);
+      transition: transform .08s ease, box-shadow .2s ease;
+      margin-top: 6px;
+    }
+    .btn:active { transform: translateY(1px) scale(.98); box-shadow: 0 4px 14px rgba(255,143,179,.3);}
+    .sub {
+      margin-top: 10px;
+      opacity: .8;
+      font-size: 13px;
+      color: #ffd9e5;
+    }
+    .tiny {
+      margin-top: 6px;
+      opacity: .55;
+      font-size: 12px;
+    }
+    /* Accessibility */
+    .btn:focus-visible { outline: 3px solid #ffd1e0; outline-offset: 2px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card" role="region" aria-labelledby="title">
+      <h1 id="title">Magic 8 Ball</h1>
+      <div class="q">Will we ever get back together?</div>
+
+      <div class="ball" id="ball" aria-live="polite">
+        <div class="window">
+          <div class="triangle"></div>
+          <div class="answer" id="answer">Tap to find out</div>
+        </div>
+      </div>
+
+      <button class="btn" id="askBtn" aria-label="Shake the Magic 8 Ball">Ask Again</button>
+      <div class="sub">All signs point to <strong>yes</strong> ✨</div>
+      <div class="tiny">Tip: you can embed this page in Notion via <code>/embed</code>.</div>
+    </div>
+  </div>
+
+  <script>
+    // Only-affirmative answers
+    const answers = [
+      "It is certain.",
+      "Without a doubt.",
+      "You already know the answer.",
+      "As sure as sunrise.",
+      "Signs point to yes.",
+      "Absolutely.",
+      "The heart says yes.",
+      "No question about it.",
+      "All paths lead to yes.",
+      "Everything aligns.",
+      "Count on it.",
+      "Undeniably yes.",
+      "The timing will be right.",
+      "Fate favors you.",
+      "Yes—give it time.",
+      "Yes—keep growing.",
+      "Yes—be patient and kind.",
+      "Yes—when the season is right.",
+      "Yes—trust the process.",
+      "Yes—this story isn’t over."
+    ];
+
+    const answerEl = document.getElementById("answer");
+    const ball = document.getElementById("ball");
+    const btn = document.getElementById("askBtn");
+
+    function pick() {
+      ball.classList.remove("shake");
+      // brief reflow to restart animation
+      void ball.offsetWidth;
+      ball.classList.add("shake");
+
+      const msg = answers[Math.floor(Math.random() * answers.length)];
+      // delay to sync with shake
+      setTimeout(() => { answerEl.textContent = msg; }, 250);
+    }
+
+    ball.addEventListener("click", pick);
+    btn.addEventListener("click", pick);
+
+    // If you want to customize the question via URL, e.g. ?q=Will%20we%20ever%20meet%20again%3F
+    const params = new URLSearchParams(location.search);
+    const q = params.get("q");
+    if (q) {
+      document.querySelector(".q").textContent = q;
+      document.title = "Magic 8 Ball — " + q;
+    }
+  </script>
+</body>
+</html>
